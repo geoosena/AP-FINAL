@@ -70,53 +70,49 @@ df_filtrado['faixa_preco'] = pd.cut(df_filtrado['preco2'], bins=5, labels=labels
 st.subheader("📄 Resumo Estatístico dos Dados Filtrados")
 st.write(df_filtrado[['preco2', 'desconto', 'desconto_percentual']].describe())
 
-# Filtros para exibir ou ocultar gráficos
-st.subheader("🔺 Selecione os gráficos para exibir")
-mostrar_hist = st.checkbox("Histograma de Preços", value=True)
-mostrar_box_preco = st.checkbox("Boxplot de Preços", value=True)
-mostrar_scatter = st.checkbox("Scatter: Preço vs Desconto (%)", value=True)
-mostrar_box_desconto = st.checkbox("Boxplot: Desconto por Faixa de Preço", value=True)
+# Opções de variáveis para os gráficos
+variaveis_numericas = ['preco2', 'desconto', 'desconto_percentual']
 
 st.subheader("📊 Gráficos Univariados")
 col1, col2 = st.columns(2)
 
 with col1:
-    if mostrar_hist:
-        st.markdown("**Histograma de Preços**")
-        fig1, ax1 = plt.subplots()
-        sns.histplot(df_filtrado['preco2'], bins=20, ax=ax1, color='black')
-        ax1.set_xlabel('Preço (R$)')
-        st.pyplot(fig1)
+    var_hist = st.selectbox("Variável para o Histograma:", variaveis_numericas, index=0)
+    st.markdown(f"**Histograma de {var_hist}**")
+    fig1, ax1 = plt.subplots()
+    sns.histplot(df_filtrado[var_hist], bins=20, ax=ax1, color='black')
+    ax1.set_xlabel(var_hist)
+    st.pyplot(fig1)
 
 with col2:
-    if mostrar_box_preco:
-        st.markdown("**Boxplot de Preços**")
-        fig2, ax2 = plt.subplots()
-        sns.boxplot(x=df_filtrado['preco2'], ax=ax2, color='pink')
-        ax2.set_xlabel('Preço (R$)')
-        st.pyplot(fig2)
+    var_box = st.selectbox("Variável para o Boxplot:", variaveis_numericas, index=0)
+    st.markdown(f"**Boxplot de {var_box}**")
+    fig2, ax2 = plt.subplots()
+    sns.boxplot(x=df_filtrado[var_box], ax=ax2, color='pink')
+    ax2.set_xlabel(var_box)
+    st.pyplot(fig2)
 
 st.subheader("📈 Gráficos Bivariados")
 col3, col4 = st.columns(2)
 
 with col3:
-    if mostrar_scatter:
-        st.markdown("**Scatter Plot: Preço vs Desconto (%)**")
-        fig3, ax3 = plt.subplots()
-        sns.scatterplot(data=df_filtrado, x='preco2', y='desconto_percentual', ax=ax3, color='black')
-        ax3.set_xlabel('Preço (R$)')
-        ax3.set_ylabel('Desconto (%)')
-        st.pyplot(fig3)
+    x_scatter = st.selectbox("Eixo X (scatter):", variaveis_numericas, index=0)
+    y_scatter = st.selectbox("Eixo Y (scatter):", variaveis_numericas, index=2)
+    st.markdown(f"**Scatter Plot: {x_scatter} vs {y_scatter}**")
+    fig3, ax3 = plt.subplots()
+    sns.scatterplot(data=df_filtrado, x=x_scatter, y=y_scatter, ax=ax3, color='black')
+    ax3.set_xlabel(x_scatter)
+    ax3.set_ylabel(y_scatter)
+    st.pyplot(fig3)
 
 with col4:
-    if mostrar_box_desconto:
-        st.markdown("**Boxplot: Desconto por Faixa de Preço**")
-        fig4, ax4 = plt.subplots()
-        sns.boxplot(data=df_filtrado, x='faixa_preco', y='desconto_percentual', ax=ax4, palette='pink')
-        ax4.set_xlabel('Faixa de Preço')
-        ax4.set_ylabel('Desconto (%)')
-        plt.xticks(rotation=45)
-        st.pyplot(fig4)
+    st.markdown("**Boxplot: Desconto por Faixa de Preço**")
+    fig4, ax4 = plt.subplots()
+    sns.boxplot(data=df_filtrado, x='faixa_preco', y='desconto_percentual', ax=ax4, palette='pink')
+    ax4.set_xlabel('Faixa de Preço')
+    ax4.set_ylabel('Desconto (%)')
+    plt.xticks(rotation=45)
+    st.pyplot(fig4)
 
 st.subheader("💂️ Tabela de Dados Filtrados")
 st.dataframe(df_filtrado)
