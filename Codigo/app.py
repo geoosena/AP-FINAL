@@ -68,7 +68,7 @@ labels = [f"R${round(interval.left,2)} - R${round(interval.right,2)}" for interv
 df_filtrado['faixa_preco'] = pd.cut(df_filtrado['preco2'], bins=5, labels=labels)
 
 # 🔁 Substituindo Resumo Estatístico
-st.subheader("📄 Algumas Estatísticas")
+st.subheader("📄 Estatísticas")
 col1, col2, col3 = st.columns(3)
 col1.metric("Preço Médio (R$)", f"{df_filtrado['preco2'].mean():.2f}")
 col2.metric("Desconto Médio (%)", f"{df_filtrado['desconto_percentual'].mean():.1f}%")
