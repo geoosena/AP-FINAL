@@ -67,8 +67,15 @@ bins = pd.cut(df_filtrado['preco2'], bins=5)
 labels = [f"R${round(interval.left,2)} - R${round(interval.right,2)}" for interval in bins.cat.categories]
 df_filtrado['faixa_preco'] = pd.cut(df_filtrado['preco2'], bins=5, labels=labels)
 
-st.subheader("📄 Resumo Estatístico dos Dados Filtrados")
-st.write(df_filtrado[['preco2', 'desconto', 'desconto_percentual']].describe())
+# 🔁 Substituindo Resumo Estatístico
+st.subheader("📄 Algumas Estatísticas")
+col1, col2, col3 = st.columns(3)
+col1.metric("Preço Médio (R$)", f"{df_filtrado['preco2'].mean():.2f}")
+col2.metric("Desconto Médio (%)", f"{df_filtrado['desconto_percentual'].mean():.1f}%")
+col3.metric("Qtd. Produtos", len(df_filtrado))
+
+st.subheader("📋 Visualização dos Dados Filtrados")
+st.dataframe(df_filtrado[['preco2', 'desconto', 'desconto_percentual']])
 
 # Opções de variáveis para os gráficos
 variaveis_numericas = ['preco2', 'desconto', 'desconto_percentual']
