@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 st.set_page_config(
     layout="wide", 
     page_title="Shein Insights: Preços & Descontos", 
-    page_icon="🍭"
+    page_icon="🛍️"
 )
 
 st.markdown(
@@ -47,12 +47,15 @@ except Exception as e:
     st.stop()
 
 df['preco2'] = df['preco2'].astype(str).str.replace('R\$', '', regex=True).str.replace(',', '.').astype(float)
+
 df['desconto'] = df['desconto'].fillna('0').astype(str)
 df['desconto'] = df['desconto'].str.replace('%', '', regex=True).str.replace('-', '0').str.strip()
 df['desconto'] = pd.to_numeric(df['desconto'], errors='coerce').fillna(0)
+
 df['desconto_percentual'] = (df['desconto'] / (df['preco2'] + df['desconto'])) * 100
 
 preco_min, preco_max = df['preco2'].min(), df['preco2'].max()
+
 preco_range = st.slider(
     "🔎 Filtrar por faixa de preço (R$):", 
     min_value=float(preco_min), 
@@ -62,7 +65,6 @@ preco_range = st.slider(
 
 df_filtrado = df[(df['preco2'] >= preco_range[0]) & (df['preco2'] <= preco_range[1])]
 
-# Faixa de preço categórica
 bins = pd.cut(df_filtrado['preco2'], bins=5)
 labels = [f"R${round(interval.left,2)} - R${round(interval.right,2)}" for interval in bins.cat.categories]
 df_filtrado['faixa_preco'] = pd.cut(df_filtrado['preco2'], bins=5, labels=labels)
@@ -70,27 +72,44 @@ df_filtrado['faixa_preco'] = pd.cut(df_filtrado['preco2'], bins=5, labels=labels
 st.subheader("📄 Resumo Estatístico dos Dados Filtrados")
 st.write(df_filtrado[['preco2', 'desconto', 'desconto_percentual']].describe())
 
-# Novo filtro apenas para os gráficos
-colunas_graficos = st.multiselect(
-    "🔺 Selecione as variáveis para exibir nos gráficos:",
-    ['preco2', 'desconto_percentual'],
-    default=['preco2', 'desconto_percentual']
-)
-
 st.subheader("📊 Gráficos Univariados")
+
 col1, col2 = st.columns(2)
 
 with col1:
-    if 'preco2' in colunas_graficos:
-        st.markdown("**Histograma de Preços**")
-        fig1, ax1 = plt.subplots()
-        sns.histplot(df_filtrado['preco2'], bins=20, ax=ax1, color='black')
-        ax1.set_xlabel('Preço (R$)')
-        st.pyplot(fig1)
+    st.markdown("**Histograma de Preços**")
+    fig1, ax1 = plt.subplots()
+    sns.histplot(df_filtrado['preco2'], bins=20, ax=ax1, color='black')
+    ax1.set_xlabel('Preço (R$)')
+    st.pyplot(fig1)
 
 with col2:
-    if 'preco2' in colunas_graficos:
-        st.markdown("**Boxplot de Preços**")
-        fig2, ax2 = plt.subplots()
-        sns.boxplot(x=df_filtrado['preco2'], ax=ax2, color='pink')
-        ax2.set_xlabel('Preço (R$)')
+    st.markdown("**Boxplot de Preços**")
+    fig2, ax2 = plt.subplots()
+    sns.boxplot(x=df_filtrado['preco2'], ax=ax2, color='pink')
+    ax2.set_xlabel('Preço (R$)')
+    st.pyplot(fig2)
+
+st.subheader("📈 Gráficos Bivariados")
+
+col3, col4 = st.columns(2)
+
+with col3:
+    st.markdown("**Scatter Plot: Preço vs Desconto (%)**")
+    fig3, ax3 = plt.subplots()
+    sns.scatterplot(data=df_filtrado, x='preco2', y='desconto_percentual', ax=ax3, color='black')
+    ax3.set_xlabel('Preço (R$)')
+    ax3.set_ylabel('Desconto (%)')
+    st.pyplot(fig3)
+
+with col4:
+    st.markdown("**Boxplot: Desconto por Faixa de Preço**")
+    fig4, ax4 = plt.subplots()
+    sns.boxplot(data=df_filtrado, x='faixa_preco', y='desconto_percentual', ax=ax4, palette='pink')
+    ax4.set_xlabel('Faixa de Preço')
+    ax4.set_ylabel('Desconto (%)')
+    plt.xticks(rotation=45)
+    st.pyplot(fig4)
+
+st.subheader("🗂️ Tabela de Dados Filtrados")
+st.dataframe(df_filtrado)
