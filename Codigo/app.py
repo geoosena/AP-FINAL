@@ -62,31 +62,26 @@ preco_range = st.slider(
 
 df_filtrado = df[(df['preco2'] >= preco_range[0]) & (df['preco2'] <= preco_range[1])]
 
-# Novo filtro de colunas
-colunas_disponiveis = ['preco2', 'desconto', 'desconto_percentual']
-colunas_selecionadas = st.multiselect(
-    "📋 Selecione as informações para visualizar:",
-    options=colunas_disponiveis,
-    default=colunas_disponiveis
-)
-
-if not colunas_selecionadas:
-    st.warning("Selecione pelo menos uma coluna para visualizar os dados.")
-    st.stop()
-
 # Faixa de preço categórica
 bins = pd.cut(df_filtrado['preco2'], bins=5)
 labels = [f"R${round(interval.left,2)} - R${round(interval.right,2)}" for interval in bins.cat.categories]
 df_filtrado['faixa_preco'] = pd.cut(df_filtrado['preco2'], bins=5, labels=labels)
 
 st.subheader("📄 Resumo Estatístico dos Dados Filtrados")
-st.write(df_filtrado[colunas_selecionadas].describe())
+st.write(df_filtrado[['preco2', 'desconto', 'desconto_percentual']].describe())
+
+# Novo filtro apenas para os gráficos
+colunas_graficos = st.multiselect(
+    "🔺 Selecione as variáveis para exibir nos gráficos:",
+    ['preco2', 'desconto_percentual'],
+    default=['preco2', 'desconto_percentual']
+)
 
 st.subheader("📊 Gráficos Univariados")
 col1, col2 = st.columns(2)
 
 with col1:
-    if 'preco2' in colunas_selecionadas:
+    if 'preco2' in colunas_graficos:
         st.markdown("**Histograma de Preços**")
         fig1, ax1 = plt.subplots()
         sns.histplot(df_filtrado['preco2'], bins=20, ax=ax1, color='black')
@@ -94,34 +89,7 @@ with col1:
         st.pyplot(fig1)
 
 with col2:
-    if 'preco2' in colunas_selecionadas:
+    if 'preco2' in colunas_graficos:
         st.markdown("**Boxplot de Preços**")
         fig2, ax2 = plt.subplots()
-        sns.boxplot(x=df_filtrado['preco2'], ax=ax2, color='pink')
-        ax2.set_xlabel('Preço (R$)')
-        st.pyplot(fig2)
-
-st.subheader("📈 Gráficos Bivariados")
-col3, col4 = st.columns(2)
-
-with col3:
-    if 'preco2' in colunas_selecionadas and 'desconto_percentual' in colunas_selecionadas:
-        st.markdown("**Scatter Plot: Preço vs Desconto (%)**")
-        fig3, ax3 = plt.subplots()
-        sns.scatterplot(data=df_filtrado, x='preco2', y='desconto_percentual', ax=ax3, color='black')
-        ax3.set_xlabel('Preço (R$)')
-        ax3.set_ylabel('Desconto (%)')
-        st.pyplot(fig3)
-
-with col4:
-    if 'desconto_percentual' in colunas_selecionadas:
-        st.markdown("**Boxplot: Desconto por Faixa de Preço**")
-        fig4, ax4 = plt.subplots()
-        sns.boxplot(data=df_filtrado, x='faixa_preco', y='desconto_percentual', ax=ax4, palette='pink')
-        ax4.set_xlabel('Faixa de Preço')
-        ax4.set_ylabel('Desconto (%)')
-        plt.xticks(rotation=45)
-        st.pyplot(fig4)
-
-st.subheader("💂️ Tabela de Dados Filtrados")
-st.dataframe(df_filtrado[colunas_selecionadas])
+        sns.boxplot(x=df_filtrado['preco2'], ax=a
