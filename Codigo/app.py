@@ -37,7 +37,7 @@ st.markdown(
 st.title("Shein Insights: Preços & Descontos")
 st.markdown("Explore os **preços e descontos** dos produtos da Shein de forma interativa.")
 
-caminho_dados = 'Codigo/dados_shein_tratado.csv'
+caminho_dados = 'Bases tratadas/dados_shein_tratado.csv'
 
 try:
     df = pd.read_csv(caminho_dados, sep=';')
