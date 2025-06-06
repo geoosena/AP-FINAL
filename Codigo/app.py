@@ -92,4 +92,5 @@ with col2:
     if 'preco2' in colunas_graficos:
         st.markdown("**Boxplot de Preços**")
         fig2, ax2 = plt.subplots()
-        sns.boxplot(x=df_filtrado['preco2'], ax=a
+        sns.boxplot(x=df_filtrado['preco2'], ax=ax2, color='pink')
+        ax2.set_xlabel('Preço (R$)')
