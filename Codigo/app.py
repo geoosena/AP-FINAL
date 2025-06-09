@@ -46,11 +46,29 @@ except Exception as e:
     st.error(f"Erro ao carregar os dados: {e}")
     st.stop()
 
-df['preco2'] = df['preco2'].astype(str).str.replace('R\$', '', regex=True).str.replace(',', '.').astype(float)
-df['desconto'] = df['desconto'].fillna('0').astype(str)
-df['desconto'] = df['desconto'].str.replace('%', '', regex=True).str.replace('-', '0').str.strip()
+# Tratamento correto dos dados de preço e desconto
+df['preco2'] = (
+    df['preco2']
+    .astype(str)
+    .str.replace('R\$', '', regex=True)
+    .str.replace(',', '.')
+    .astype(float)
+)
+
+df['desconto'] = (
+    df['desconto']
+    .fillna('0')
+    .astype(str)
+    .str.replace('R\$', '', regex=True)
+    .str.replace('%', '', regex=True)
+    .str.replace('-', '0')
+    .str.replace(',', '.')
+    .str.strip()
+)
+
 df['desconto'] = pd.to_numeric(df['desconto'], errors='coerce').fillna(0)
-df['desconto_percentual'] = (df['desconto'] / (df['preco2'] + df['desconto'])) * 100
+df['preco_original'] = df['preco2'] + df['desconto']
+df['desconto_percentual'] = (df['desconto'] / df['preco_original']) * 100
 
 preco_min, preco_max = df['preco2'].min(), df['preco2'].max()
 
@@ -67,7 +85,6 @@ bins = pd.cut(df_filtrado['preco2'], bins=5)
 labels = [f"R${round(interval.left,2)} - R${round(interval.right,2)}" for interval in bins.cat.categories]
 df_filtrado['faixa_preco'] = pd.cut(df_filtrado['preco2'], bins=5, labels=labels)
 
-# 🔁 Substituindo Resumo Estatístico
 st.subheader("📄 Estatísticas")
 col1, col2, col3 = st.columns(3)
 col1.metric("Preço Médio (R$)", f"{df_filtrado['preco2'].mean():.2f}")
@@ -75,9 +92,8 @@ col2.metric("Desconto Médio (%)", f"{df_filtrado['desconto_percentual'].mean():
 col3.metric("Qtd. Produtos", len(df_filtrado))
 
 st.subheader("📋 Visualização dos Dados Filtrados")
-st.dataframe(df_filtrado[['preco2', 'desconto', 'desconto_percentual']])
+st.dataframe(df_filtrado[['preco_original', 'preco2', 'desconto', 'desconto_percentual']])
 
-# Opções de variáveis para os gráficos
 variaveis_numericas = ['preco2', 'desconto', 'desconto_percentual']
 
 st.subheader("📊 Gráficos Univariados")
@@ -121,5 +137,5 @@ with col4:
     plt.xticks(rotation=45)
     st.pyplot(fig4)
 
-st.subheader("💂️ Tabela de Dados Filtrados")
+st.subheader("🛂️ Tabela de Dados Filtrados")
 st.dataframe(df_filtrado)
