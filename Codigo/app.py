@@ -109,9 +109,9 @@ col2.metric("Desconto Médio (%)", f"{df_filtrado['desconto_percentual'].mean():
 col3.metric("Qtd. Produtos", len(df_filtrado))
 
 st.subheader("📋 Visualização dos Dados Filtrados")
-st.dataframe(df_filtrado[['preco_original', 'preco2', 'desconto_reais', 'desconto_percentual']])
+st.dataframe(df_filtrado[['preco_original', 'preco2', 'desconto_percentual']])
 
-variaveis_numericas = ['preco2', 'desconto_reais', 'desconto_percentual']
+variaveis_numericas = ['preco2', 'desconto_percentual']
 
 st.subheader("📊 Gráficos Univariados")
 col1, col2 = st.columns(2)
@@ -137,7 +137,7 @@ col3, col4 = st.columns(2)
 
 with col3:
     x_scatter = st.selectbox("Eixo X (scatter):", variaveis_numericas, index=0)
-    y_scatter = st.selectbox("Eixo Y (scatter):", variaveis_numericas, index=2)
+    y_scatter = st.selectbox("Eixo Y (scatter):", variaveis_numericas, index=1)
     st.markdown(f"**Scatter Plot: {x_scatter} vs {y_scatter}**")
     fig3, ax3 = plt.subplots()
     sns.scatterplot(data=df_filtrado, x=x_scatter, y=y_scatter, ax=ax3, color='black')
