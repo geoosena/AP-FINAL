@@ -55,20 +55,37 @@ df['preco2'] = (
     .astype(float)
 )
 
-df['desconto'] = (
-    df['desconto']
-    .fillna('0')
+# Identificar se desconto é percentual ou absoluto
+is_percentual = df['desconto'].astype(str).str.contains('%')
+df['desconto_reais'] = 0.0
+
+# Tratar percentuais
+df.loc[is_percentual, 'desconto'] = (
+    df.loc[is_percentual, 'desconto']
     .astype(str)
-    .str.replace('R\$', '', regex=True)
-    .str.replace('%', '', regex=True)
-    .str.replace('-', '0')
+    .str.replace('%', '')
     .str.replace(',', '.')
     .str.strip()
 )
+df.loc[is_percentual, 'desconto'] = pd.to_numeric(df.loc[is_percentual, 'desconto'], errors='coerce')
+df.loc[is_percentual, 'desconto_reais'] = df.loc[is_percentual, 'preco2'] * (df.loc[is_percentual, 'desconto'] / (100 - df.loc[is_percentual, 'desconto']))
 
-df['desconto'] = pd.to_numeric(df['desconto'], errors='coerce').fillna(0)
-df['preco_original'] = df['preco2'] + df['desconto']
-df['desconto_percentual'] = (df['desconto'] / df['preco_original']) * 100
+# Tratar valores absolutos
+df.loc[~is_percentual, 'desconto'] = (
+    df.loc[~is_percentual, 'desconto']
+    .astype(str)
+    .str.replace('R\$', '', regex=True)
+    .str.replace(',', '.')
+    .str.replace('-', '0')
+    .str.strip()
+)
+df.loc[~is_percentual, 'desconto'] = pd.to_numeric(df.loc[~is_percentual, 'desconto'], errors='coerce')
+df.loc[~is_percentual, 'desconto_reais'] = df.loc[~is_percentual, 'desconto']
+
+# Preço original e percentual
+df['desconto_reais'] = df['desconto_reais'].fillna(0)
+df['preco_original'] = df['preco2'] + df['desconto_reais']
+df['desconto_percentual'] = (df['desconto_reais'] / df['preco_original']) * 100
 
 preco_min, preco_max = df['preco2'].min(), df['preco2'].max()
 
@@ -92,9 +109,9 @@ col2.metric("Desconto Médio (%)", f"{df_filtrado['desconto_percentual'].mean():
 col3.metric("Qtd. Produtos", len(df_filtrado))
 
 st.subheader("📋 Visualização dos Dados Filtrados")
-st.dataframe(df_filtrado[['preco_original', 'preco2', 'desconto', 'desconto_percentual']])
+st.dataframe(df_filtrado[['preco_original', 'preco2', 'desconto_reais', 'desconto_percentual']])
 
-variaveis_numericas = ['preco2', 'desconto', 'desconto_percentual']
+variaveis_numericas = ['preco2', 'desconto_reais', 'desconto_percentual']
 
 st.subheader("📊 Gráficos Univariados")
 col1, col2 = st.columns(2)
